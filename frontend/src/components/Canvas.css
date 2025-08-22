@@ -1,0 +1,145 @@
+.canvas-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+}
+
+.canvas {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: auto;
+    cursor: grab;
+    transform-origin: 0 0;
+}
+
+.canvas:active {
+    cursor: grabbing;
+}
+
+svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+svg line {
+    stroke: rgba(255, 255, 255, 0.6);
+    stroke-width: 2;
+    pointer-events: none;
+    filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.3));
+}
+
+/* For temporary connection line when creating a new connection */
+.temp-connection {
+    stroke: rgba(255, 255, 255, 0.8);
+    stroke-width: 2;
+    stroke-dasharray: 5, 5;
+    animation: dash-animation 1s linear infinite;
+}
+
+@keyframes dash-animation {
+    to {
+        stroke-dashoffset: -10;
+    }
+}
+
+/* Loading and empty states */
+.canvas-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+    padding: 20px;
+}
+
+.canvas-empty h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: #64b5f6;
+}
+
+.canvas-empty p {
+    font-size: 1rem;
+    max-width: 600px;
+    line-height: 1.6;
+}
+
+.canvas-loader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.canvas-loader-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #64b5f6;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Node selected state overlay */
+.node-selection-overlay {
+    position: absolute;
+    border: 2px dashed #64b5f6;
+    pointer-events: none;
+    z-index: 2;
+    border-radius: 14px;
+    box-shadow: 0 0 15px rgba(100, 181, 246, 0.4);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 15px rgba(100, 181, 246, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 0 25px rgba(100, 181, 246, 0.7);
+    }
+}
+
+/* Mini-map styles (if implementing) */
+.canvas-minimap {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 200px;
+    height: 150px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+    overflow: hidden;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.canvas-minimap-viewport {
+    position: absolute;
+    border: 1px solid #64b5f6;
+    background: rgba(100, 181, 246, 0.1);
+    pointer-events: none;
+}
