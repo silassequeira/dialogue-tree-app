@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dialogue Tree Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3a 100%);
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .game-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .dialogue-window {
+            flex: 1;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .npc-dialogue {
+            background: linear-gradient(145deg, rgba(76, 175, 80, 0.15), rgba(76, 175, 80, 0.05));
+            border: 2px solid rgba(76, 175, 80, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .player-choices {
+            background: linear-gradient(145deg, rgba(33, 150, 243, 0.15), rgba(33, 150, 243, 0.05));
+            border: 2px solid rgba(33, 150, 243, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 0.5s ease-out 0.2s both;
+        }
+
+        .npc-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .npc-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(45deg, #4caf50, #2e7d32);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 18px;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .npc-name {
+            font-weight: bold;
+            font-size: 16px;
+            color: #81c784;
+        }
+
+        .npc-text {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #e8f5e8;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .choice-button {
+            background: linear-gradient(145deg, rgba(33, 150, 243, 0.2), rgba(33, 150, 243, 0.1));
+            border: 2px solid rgba(33, 150, 243, 0.4);
+            color: white;
+            padding: 15px 20px;
+            margin: 8px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            text-align: left;
+            backdrop-filter: blur(5px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .choice-button:hover {
+            background: linear-gradient(145deg, rgba(33, 150, 243, 0.4), rgba(33, 150, 243, 0.2));
+            border-color: rgba(33, 150, 243, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(33, 150, 243, 0.3);
+        }
+
+        .choice-button:active {
+            transform: translateY(0);
+        }
+
+        .choice-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.6s;
+        }
+
+        .choice-button:hover::before {
+            left: 100%;
+        }
+
+        .choice-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: linear-gradient(145deg, rgba(100, 100, 100, 0.2), rgba(100, 100, 100, 0.1));
+            border-color: rgba(100, 100, 100, 0.4);
+        }
+
+        .choice-disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .sidebar {
+            width: 350px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(15px);
+            padding: 20px;
+            overflow-y: auto;
+            border-left: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section {
+            margin-bottom: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section h3 {
+            margin-bottom: 10px;
+            color: #64b5f6;
+            font-size: 16px;
+            border-bottom: 1px solid rgba(100, 181, 246, 0.3);
+            padding-bottom: 5px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #42a5f5, #1976d2);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin: 2px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn.success {
+            background: linear-gradient(45deg, #66bb6a, #388e3c);
+        }
+
+        .btn.danger {
+            background: linear-gradient(45deg, #ef5350, #d32f2f);
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 12px;
+        }
+
+        .game-state {
+            font-size: 12px;
+        }
+
+        .state-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 10px;
+            margin: 3px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .inventory-item {
+            background: rgba(76, 175, 80, 0.2);
+            color: #81c784;
+        }
+
+        .location-item {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffd54f;
+        }
+
+        .variable-item {
+            background: rgba(156, 39, 176, 0.2);
+            color: #ce93d8;
+        }
+
+        .dialogue-history {
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 11px;
+        }
+
+        .history-item {
+            padding: 5px;
+            margin: 2px 0;
+            border-radius: 4px;
+            border-left: 3px solid;
+        }
+
+        .history-npc {
+            background: rgba(76, 175, 80, 0.1);
+            border-color: #4caf50;
+        }
+
+        .history-player {
+            background: rgba(33, 150, 243, 0.1);
+            border-color: #2196f3;
+        }
+
+        .conditions-info {
+            font-size: 11px;
+            color: #ffeb3b;
+            margin-top: 10px;
+            padding: 8px;
+            background: rgba(255, 235, 59, 0.1);
+            border-radius: 4px;
+            border-left: 3px solid #ffeb3b;
+        }
+
+        .consequences-info {
+            font-size: 11px;
+            color: #ff9800;
+            margin-top: 5px;
+            padding: 8px;
+            background: rgba(255, 152, 0, 0.1);
+            border-radius: 4px;
+            border-left: 3px solid #ff9800;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .no-dialogue {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 18px;
+            margin-top: 50px;
+        }
+
+        .end-dialogue {
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(145deg, rgba(255, 193, 7, 0.15), rgba(255, 193, 7, 0.05));
+            border: 2px solid rgba(255, 193, 7, 0.3);
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .typing-indicator {
+            display: inline-block;
+            animation: typing 1.5s infinite;
+        }
+
+        @keyframes typing {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="game-panel">
+            <div class="dialogue-window" id="dialogueWindow">
+                <div class="no-dialogue">
+                    Load a dialogue tree JSON file to start playing!
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="section">
+                <h3>🎮 Game Controls</h3>
+                <input type="file" id="loadDialogue" accept=".json" onchange="loadDialogueTree()">
+                <button class="btn success" onclick="startDialogue()">Start/Restart</button>
+                <button class="btn" onclick="previousDialogue()">← Previous</button>
+                <button class="btn danger" onclick="resetGame()">Reset Game</button>
+            </div>
+
+            <div class="section">
+                <h3>🎒 Player Inventory</h3>
+                <div id="inventory" class="game-state">
+                    <div class="state-item inventory-item">No items</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>📍 Current Location</h3>
+                <div id="location" class="game-state">
+                    <div class="state-item location-item">Unknown</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>⚙️ Game Variables</h3>
+                <div id="gameVariables" class="game-state">
+                    <div class="state-item variable-item">Level: 1</div>
+                    <div class="state-item variable-item">Experience: 0</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>📜 Dialogue History</h3>
+                <div id="dialogueHistory" class="dialogue-history">
+                    <div style="color: rgba(255,255,255,0.5); text-align: center; padding: 20px;">
+                        No dialogue yet
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>ℹ️ Current Node Info</h3>
+                <div id="nodeInfo" style="font-size: 11px; color: rgba(255,255,255,0.7);">
+                    No active dialogue
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let dialogueData = null;
+        let currentNodeId = null;
+        let gameState = {
+            inventory: [],
+            location: 'Unknown',
+            variables: {
+                level: 1,
+                experience: 0,
+                currentQuest: null
+            }
+        };
+        let dialogueHistory = [];
+        let visitedNodes = [];
+
+        // Player object for custom conditions/actions
+        let player = new Proxy(gameState.variables, {
+            get(target, prop) {
+                return target[prop];
+            },
+            set(target, prop, value) {
+                target[prop] = value;
+                updateGameStateDisplay();
+                return true;
+            }
+        });
+
+        function loadDialogueTree() {
+            const file = document.getElementById('loadDialogue').files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    dialogueData = JSON.parse(e.target.result);
+                    console.log('Loaded dialogue data:', dialogueData);
+                    
+                    // Initialize game state with available items and locations
+                    if (dialogueData.gameElements) {
+                        updateGameStateDisplay();
+                    }
+                    
+                    document.getElementById('dialogueWindow').innerHTML = `
+                        <div style="text-align: center; color: #4caf50; font-size: 18px;">
+                            ✅ Dialogue tree loaded successfully!<br>
+                            <small style="color: rgba(255,255,255,0.7);">
+                                ${dialogueData.nodes?.length || 0} nodes, 
+                                ${dialogueData.connections?.length || 0} connections
+                            </small><br><br>
+                            <span style="color: rgba(255,255,255,0.8);">Click "Start/Restart" to begin</span>
+                        </div>
+                    `;
+                } catch (error) {
+                    alert('Error loading dialogue file: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function startDialogue() {
+            if (!dialogueData || !dialogueData.nodes) {
+                alert('Please load a dialogue tree first!');
+                return;
+            }
+            
+            // Find the first node (no incoming connections)
+            const firstNode = findStartNode();
+            if (!firstNode) {
+                alert('No starting node found in dialogue tree!');
+                return;
+            }
+            
+            currentNodeId = firstNode.id;
+            visitedNodes = [];
+            dialogueHistory = [];
+            
+            displayCurrentNode();
+            updateGameStateDisplay();
+        }
+
+        function findStartNode() {
+            if (!dialogueData.nodes || dialogueData.nodes.length === 0) return null;
+            
+            // Find nodes with no incoming connections
+            const hasIncoming = new Set();
+            if (dialogueData.connections) {
+                dialogueData.connections.forEach(conn => {
+                    hasIncoming.add(conn.to);
+                });
+            }
+            
+            // Return first node without incoming connections
+            for (let node of dialogueData.nodes) {
+                if (!hasIncoming.has(node.id)) {
+                    return node;
+                }
+            }
+            
+            // If all nodes have incoming connections, return the first one
+            return dialogueData.nodes[0];
+        }
+
+        function displayCurrentNode() {
+            if (!currentNodeId || !dialogueData) return;
+            
+            const node = dialogueData.nodes.find(n => n.id === currentNodeId);
+            if (!node) {
+                showEndDialogue();
+                return;
+            }
+            
+            // Check if conditions are met
+            if (!checkConditions(node)) {
+                // Try to find alternative path or show condition info
+                showConditionNotMet(node);
+                return;
+            }
+            
+            // Add to history
+            visitedNodes.push(currentNodeId);
+            
+            const dialogueWindow = document.getElementById('dialogueWindow');
+            
+            if (node.type === 'npc') {
+                displayNPCDialogue(node);
+            } else if (node.type === 'player') {
+                displayPlayerChoices(node);
+            }
+            
+            // Execute consequences
+            executeConsequences(node);
+            
+            // Update node info
+            updateNodeInfo(node);
+        }
+
+        function displayNPCDialogue(node) {
+            const npcName = node.associatedNpc || 'NPC';
+            const dialogueWindow = document.getElementById('dialogueWindow');
+            
+            dialogueWindow.innerHTML = `
+                <div class="npc-dialogue">
+                    <div class="npc-header">
+                        <div class="npc-avatar">👤</div>
+                        <div class="npc-name">${npcName}</div>
+                    </div>
+                    <div class="npc-text">
+                        <span class="typing-indicator">${node.text}</span>
+                    </div>
+                    ${getConditionsDisplay(node)}
+                    ${getConsequencesDisplay(node)}
+                </div>
+            `;
+            
+            // Add to history
+            dialogueHistory.push({
+                type: 'npc',
+                speaker: npcName,
+                text: node.text,
+                nodeId: node.id
+            });
+            
+            updateDialogueHistory();
+            
+            // Auto-continue to next node after a delay
+            setTimeout(() => {
+                const nextNode = getNextNode(node.id);
+                if (nextNode) {
+                    currentNodeId = nextNode.id;
+                    displayCurrentNode();
+                } else {
+                    showEndDialogue();
+                }
+            }, 2000);
+        }
+
+        function displayPlayerChoices(node) {
+            const dialogueWindow = document.getElementById('dialogueWindow');
+            
+            let choicesHtml = '';
+            node.choices.forEach((choice, index) => {
+                const nextNode = getChoiceTarget(node.id, index);
+                const isEnabled = !nextNode || checkConditions(nextNode);
+                
+                choicesHtml += `
+                    <button class="choice-button ${isEnabled ? '' : 'choice-disabled'}" 
+                            onclick="${isEnabled ? `selectChoice(${node.id}, ${index})` : ''}"
+                            ${isEnabled ? '' : 'disabled'}>
+                        ${choice}
+                    </button>
+                `;
+            });
+            
+            dialogueWindow.innerHTML = `
+                <div class="player-choices">
+                    <div style="margin-bottom: 20px; font-size: 16px; color: #81c784;">
+                        ${node.text}
+                    </div>
+                    ${choicesHtml}
+                    ${getConditionsDisplay(node)}
+                    ${getConsequencesDisplay(node)}
+                </div>
+            `;
+            
+            updateNodeInfo(node);
+        }
+
+        function selectChoice(nodeId, choiceIndex) {
+            const node = dialogueData.nodes.find(n => n.id === nodeId);
+            if (!node) return;
+            
+            const choiceText = node.choices[choiceIndex];
+            
+            // Add to history
+            dialogueHistory.push({
+                type: 'player',
+                speaker: 'You',
+                text: choiceText,
+                nodeId: nodeId
+            });
+            
+            updateDialogueHistory();
+            
+            // Execute consequences for player choice
+            executeConsequences(node);
+            
+            // Move to next node
+            const nextNode = getChoiceTarget(nodeId, choiceIndex);
+            if (nextNode) {
+                currentNodeId = nextNode.id;
+                displayCurrentNode();
+            } else {
+                showEndDialogue();
+            }
+        }
+
+        function getNextNode(currentId) {
+            const connection = dialogueData.connections?.find(c => c.from === currentId);
+            return connection ? dialogueData.nodes.find(n => n.id === connection.to) : null;
+        }
+
+        function getChoiceTarget(nodeId, choiceIndex) {
+            // For now, we'll use the first available connection
+            // In a more advanced system, you might want to specify which choice leads to which node
+            return getNextNode(nodeId);
+        }
+
+        function checkConditions(node) {
+            if (!node.conditions) return true;
+            
+            // Check required items
+            if (node.conditions.requiredItems && node.conditions.requiredItems.length > 0) {
+                for (let item of node.conditions.requiredItems) {
+                    if (!gameState.inventory.includes(item)) {
+                        return false;
+                    }
+                }
+            }
+            
+            // Check required location
+            if (node.conditions.requiredLocation && 
+                gameState.location !== node.conditions.requiredLocation) {
+                return false;
+            }
+            
+            // Check custom condition
+            if (node.conditions.custom) {
+                try {
+                    return eval(node.conditions.custom);
+                } catch (e) {
+                    console.warn('Error evaluating condition:', node.conditions.custom, e);
+                    return true;
+                }
+            }
+            
+            return true;
+        }
+
+        function executeConsequences(node) {
+            if (!node.consequences) return;
+            
+            // Give items
+            if (node.consequences.giveItems) {
+                node.consequences.giveItems.forEach(item => {
+                    if (!gameState.inventory.includes(item)) {
+                        gameState.inventory.push(item);
+                    }
+                });
+            }
+            
+            // Remove items
+            if (node.consequences.removeItems) {
+                node.consequences.removeItems.forEach(item => {
+                    const index = gameState.inventory.indexOf(item);
+                    if (index > -1) {
+                        gameState.inventory.splice(index, 1);
+                    }
+                });
+            }
+            
+            // Change location
+            if (node.consequences.changeLocation) {
+                gameState.location = node.consequences.changeLocation;
+            }
+            
+            // Execute custom action
+            if (node.consequences.custom) {
+                try {
+                    eval(node.consequences.custom);
+                } catch (e) {
+                    console.warn('Error executing custom action:', node.consequences.custom, e);
+                }
+            }
+            
+            updateGameStateDisplay();
+        }
+
+        function getConditionsDisplay(node) {
+            if (!node.conditions || 
+                (!node.conditions.requiredItems?.length && 
+                 !node.conditions.requiredLocation && 
+                 !node.conditions.custom)) {
+                return '';
+            }
+            
+            let conditionsText = 'Conditions: ';
+            if (node.conditions.requiredItems?.length) {
+                conditionsText += `Items: ${node.conditions.requiredItems.join(', ')} `;
+            }
+            if (node.conditions.requiredLocation) {
+                conditionsText += `Location: ${node.conditions.requiredLocation} `;
+            }
+            if (node.conditions.custom) {
+                conditionsText += `Custom: ${node.conditions.custom}`;
+            }
+            
+            return `<div class="conditions-info">${conditionsText}</div>`;
+        }
+
+        function getConsequencesDisplay(node) {
+            if (!node.consequences || 
+                (!node.consequences.giveItems?.length && 
+                 !node.consequences.removeItems?.length && 
+                 !node.consequences.changeLocation && 
+                 !node.consequences.custom)) {
+                return '';
+            }
+            
+            let consequencesText = 'Actions: ';
+            if (node.consequences.giveItems?.length) {
+                consequencesText += `Give: ${node.consequences.giveItems.join(', ')} `;
+            }
+            if (node.consequences.removeItems?.length) {
+                consequencesText += `Remove: ${node.consequences.removeItems.join(', ')} `;
+            }
+            if (node.consequences.changeLocation) {
+                consequencesText += `Go to: ${node.consequences.changeLocation} `;
+            }
+            if (node.consequences.custom) {
+                consequencesText += `Custom: ${node.consequences.custom}`;
+            }
+            
+            return `<div class="consequences-info">${consequencesText}</div>`;
+        }
+
+        function showConditionNotMet(node) {
+            const dialogueWindow = document.getElementById('dialogueWindow');
+            dialogueWindow.innerHTML = `
+                <div class="npc-dialogue" style="border-color: #f44336; background: linear-gradient(145deg, rgba(244, 67, 54, 0.15), rgba(244, 67, 54, 0.05));">
+                    <div class="npc-header">
+                        <div class="npc-avatar">⚠️</div>
+                        <div class="npc-name">Conditions Not Met</div>
+                    </div>
+                    <div class="npc-text">
+                        This dialogue cannot be accessed yet.
+                    </div>
+                    ${getConditionsDisplay(node)}
+                </div>
+            `;
+        }
+
+        function showEndDialogue() {
+            const dialogueWindow = document.getElementById('dialogueWindow');
+            dialogueWindow.innerHTML = `
+                <div class="end-dialogue">
+                    <h2>🏁 Dialogue Complete</h2>
+                    <p>You have reached the end of this dialogue branch.</p>
+                    <button class="btn success" onclick="startDialogue()" style="margin-top: 20px;">
+                        Start Over
+                    </button>
+                </div>
+            `;
+        }
+
+        function updateGameStateDisplay() {
+            // Update inventory
+            const inventoryDiv = document.getElementById('inventory');
+            if (gameState.inventory.length === 0) {
+                inventoryDiv.innerHTML = '<div class="state-item inventory-item">No items</div>';
+            } else {
+                inventoryDiv.innerHTML = gameState.inventory.map(item => 
+                    `<div class="state-item inventory-item">${item}</div>`
+                ).join('');
+            }
+            
+            // Update location
+            const locationDiv = document.getElementById('location');
+            locationDiv.innerHTML = `<div class="state-item location-item">${gameState.location}</div>`;
+            
+            // Update variables
+            const variablesDiv = document.getElementById('gameVariables');
+            variablesDiv.innerHTML = Object.entries(gameState.variables).map(([key, value]) => 
+                `<div class="state-item variable-item">${key}: ${value}</div>`
+            ).join('');
+        }
+
+        function updateDialogueHistory() {
+            const historyDiv = document.getElementById('dialogueHistory');
+            if (dialogueHistory.length === 0) {
+                historyDiv.innerHTML = '<div style="color: rgba(255,255,255,0.5); text-align: center; padding: 20px;">No dialogue yet</div>';
+                return;
+            }
+            
+            historyDiv.innerHTML = dialogueHistory.slice(-10).map(entry => 
+                `<div class="history-item history-${entry.type}">
+                    <strong>${entry.speaker}:</strong> ${entry.text}
+                </div>`
+            ).join('');
+            
+            historyDiv.scrollTop = historyDiv.scrollHeight;
+        }
+
+        function updateNodeInfo(node) {
+            const nodeInfoDiv = document.getElementById('nodeInfo');
+            nodeInfoDiv.innerHTML = `
+                <strong>Node ID:</strong> ${node.id}<br>
+                <strong>Type:</strong> ${node.type}<br>
+                <strong>Associated NPC:</strong> ${node.associatedNpc || 'None'}<br>
+                <strong>Choices:</strong> ${node.choices?.length || 0}
+            `;
+        }
+
+        function previousDialogue() {
+            if (visitedNodes.length > 1) {
+                visitedNodes.pop(); // Remove current node
+                const previousNodeId = visitedNodes.pop(); // Get previous node
+                currentNodeId = previousNodeId;
+                
+                // Remove last entry from history
+                if (dialogueHistory.length > 0) {
+                    dialogueHistory.pop();
+                }
+                
+                displayCurrentNode();
+                updateDialogueHistory();
+            }
+        }
+
+        function resetGame() {
+            gameState = {
+                inventory: [],
+                location: 'Unknown',
+                variables: {
+                    level: 1,
+                    experience: 0,
+                    currentQuest: null
+                }
+            };
+            
+            // Update player proxy
+            player = new Proxy(gameState.variables, {
+                get(target, prop) {
+                    return target[prop];
+                },
+                set(target, prop, value) {
+                    target[prop] = value;
+                    updateGameStateDisplay();
+                    return true;
+                }
+            });
+            
+            dialogueHistory = [];
+            visitedNodes = [];
+            currentNodeId = null;
+            
+            updateGameStateDisplay();
+            updateDialogueHistory();
+            
+            document.getElementById('dialogueWindow').innerHTML = `
+                <div class="no-dialogue">
+                    Game state reset. Click "Start/Restart" to begin again!
+                </div>
+            `;
+        }
+
+        // Initialize display
+        updateGameStateDisplay();
+    </script>
+</body>
+</html>

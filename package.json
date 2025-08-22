@@ -1,0 +1,23 @@
+{
+  "name": "dialogue-tree-app",
+  "version": "1.0.0",
+  "description": "Minimal dialogue tree editor, from a static website made using React and Node",
+  "main": "index.js",
+  "scripts": {
+    "build": "cd frontend && npm run build",
+    "installserver": "cd server && npm install && cd ..",
+    "installfrontend": "cd frontend && npm install && cd ..",
+    "server": "cd backend && node server",
+    "viteapp": "cd frontend && npm run dev",
+    "frontend": "start chrome http://localhost:5173/ && npm-run-all -p server viteapp",
+    "app": "start chrome http://localhost:3000/ && npm run server",
+    "electron": "cd electron && npm start",
+    "electronBuildFrontend": "cd electron && cd frontend && npm run build",
+    "electronBuild": "cd electron && npm run build"
+  },
+  "keywords": [
+    "reactjs"
+  ],
+  "author": "Silas Sequeira",
+  "license": "MIT"
+}
