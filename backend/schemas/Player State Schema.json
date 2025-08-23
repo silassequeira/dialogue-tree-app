@@ -1,0 +1,22 @@
+{
+  "lastSaved": "string", // Timestamp of the last save
+  "currentLocationId": "string",
+  "inventory": [
+    "string" // Array of item IDs
+  ],
+  "cluesCollected": {
+    "string": "boolean" // Map of clue IDs to their collected status
+  },
+  "activeQuests": [
+    "string" // Array of quest IDs
+  ],
+  "completedQuests": [
+    "string" // Array of quest IDs
+  ],
+  "flags": {
+    "string": "number" // Flag IDs and their current values (e.g., "rose_trust": 1)
+  },
+  "visitedDialogueNodes": {
+    "string": "boolean" // A record of all visited nodes
+  }
+}

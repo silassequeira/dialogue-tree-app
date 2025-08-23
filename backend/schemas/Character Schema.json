@@ -1,0 +1,10 @@
+{
+  "id": "string",
+  "name": "string",
+  "type": "string",
+  "description": "string",
+  "trustLevel": "number",
+  "unlockedLocations": ["string"],
+  "unlockedDialogueNodes": ["string"],
+  "currentLocation": "string"
+}

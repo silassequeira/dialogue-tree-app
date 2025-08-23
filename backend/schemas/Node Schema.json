@@ -1,0 +1,40 @@
+{
+  "id": "string",
+  "type": "string", // "npc" or "player"
+  "character": "string",
+  "dialogueText": "string",
+  "choices": [
+    {
+      "id": "string",
+      "dialogueText": "string",
+      "conditions": {
+        "requiredItems": ["string"],
+        "requiredClues": ["string"],
+        "requiredLocation": "string",
+        "requiredPatience": "number",
+        "risk": {
+          "baseChance": "number", // 0.0 to 1.0
+          "modifiers": {
+            "string": "number" // Clue or flag ID as key, modifier as value
+          }
+        }
+      },
+      "consequences": {
+        "giveItems": ["string"],
+        "giveClues": ["string"],
+        "removeItems": ["string"],
+        "unlockLocation": "string",
+        "unlockQuest": "string",
+        "completeQuest": "string",
+        "unlockDialogue": ["string"],
+        "unlockItem": "string",
+        "setFlags": {
+          "string": "number" // Flag ID as key, value as number
+        }
+      },
+      "successNext": "string", // ID of the next node
+      "failureNext": "string" // ID of the next node if the choice fails
+    }
+  ],
+  "nextId": "string" // ID of the next node, used for Player nodes with no choices
+}

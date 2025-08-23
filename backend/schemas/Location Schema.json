@@ -1,0 +1,10 @@
+{
+  "id": "string",
+  "type": "string", // "location"
+  "description": "string",
+  "unlocked": "boolean",
+  "unlocks": {
+    "characters": ["string"],
+    "items": ["string"]
+  }
+}

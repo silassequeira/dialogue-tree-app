@@ -1,0 +1,17 @@
+{
+  "id": "string",
+  "type": "string", // "item"
+  "description": "string",
+  "choices": [
+    {
+      "id": "string",
+      "dialogueText": "string",
+      "conditions": {},
+      "consequences": {
+        "giveClues": ["string"]
+      },
+      "nextId": "string" // ID of the next node, or "null" to end dialogue
+    }
+  ],
+  "nextId": "string" // ID of the next node
+}

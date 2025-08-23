@@ -1,0 +1,7 @@
+{
+  "id": "string",
+  "type": "string", // "clue"
+  "dialogueText": "string",
+  "connects": ["string"], // IDs of related clues or items
+  "modifier": "number" // The value this clue adds as a modifier
+}

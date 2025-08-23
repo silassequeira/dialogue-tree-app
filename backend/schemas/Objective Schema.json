@@ -1,0 +1,32 @@
+{
+  "id": "string",
+  "title": "string",
+  "description": "string",
+  "status": "string", // "active", "completed", "failed", "unlocked"
+  "prerequisites": {
+    "requiredClues": ["string"],
+    "requiredItems": ["string"],
+    "requiredFlags": {
+      "string": "number" // Flag ID and required value
+    }
+  },
+  "tasks": [
+    {
+      "taskId": "string",
+      "taskDescription": "string",
+      "completionCondition": {
+        "reachNodeId": "string",
+        "gainClueId": "string",
+        "gainItemId": "string"
+      },
+      "isCompleted": "boolean"
+    }
+  ],
+  "rewards": {
+    "giveItems": ["string"],
+    "giveClues": ["string"],
+    "setFlags": {
+      "string": "number"
+    }
+  }
+}
